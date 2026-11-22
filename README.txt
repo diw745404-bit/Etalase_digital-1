@@ -3,33 +3,39 @@
 =====================================================
 
 Aplikasi portfolio siswa: tampilkan karya digital, link project, dan demo.
-Dibuat dengan PHP + SQLite, tampilan gelap modern dengan animasi 3D.
+Dibuat dengan PHP + MySQL/MariaDB, tampilan gelap modern dengan animasi 3D.
 
 
 ISI FOLDER
 ----------
   index.php   -> seluruh logika aplikasi (login, project, user) + tampilan
+  database.sql -> skema database MySQL/MariaDB
   style.css   -> desain, tema gelap, kubus 3D, animasi
   script.js   -> partikel, tilt 3D, animasi scroll, efek mengetik
   README.txt  -> petunjuk ini
 
-Folder "uploads" dan file "database.sqlite" dibuat otomatis saat pertama
-kali dijalankan / saat upload gambar pertama.
+Folder "uploads" dibuat otomatis saat upload gambar pertama.
+File database.sqlite lama tidak digunakan oleh aplikasi dan dibiarkan sebagai
+cadangan; datanya tidak otomatis dipindahkan ke database MySQL/MariaDB.
 
 
 CARA MENJALANKAN DI VISUAL STUDIO CODE
 --------------------------------------
-1. Install PHP (versi 7.4 atau lebih baru)
-   - Windows : download dari https://windows.php.net/download lalu ekstrak
-               (misal ke C:\php) dan tambahkan ke PATH.
-               Atau install XAMPP / Laragon (sudah termasuk PHP).
-   - Cek di terminal:  php -v
+1. Install XAMPP atau Laragon, lalu jalankan Apache dan MySQL/MariaDB.
+   PHP harus memiliki ekstensi pdo_mysql aktif.
 
-2. Aktifkan ekstensi SQLite di php.ini (hapus tanda ; di depan baris):
-       extension=pdo_sqlite
-       extension=sqlite3
-   (Jika php.ini belum ada, salin php.ini-development menjadi php.ini)
-   Cek dengan:  php -m   -> pastikan "pdo_sqlite" muncul.
+2. Buat database dan tabel dengan mengimpor file database.sql:
+   - XAMPP: buka http://localhost/phpmyadmin
+   - Pilih menu Import, pilih file database.sql, lalu jalankan.
+
+   Koneksi bawaan aplikasi: host 127.0.0.1, port 3306, database
+   etalase_digital, username root, password kosong. Atur kredensial
+   melalui environment variable berikut jika konfigurasi berbeda:
+       ETALASE_DB_HOST
+       ETALASE_DB_PORT
+       ETALASE_DB_NAME
+       ETALASE_DB_USER
+       ETALASE_DB_PASSWORD
 
 3. Buka folder project di VS Code:
    File > Open Folder... > pilih folder yang berisi index.php
@@ -77,15 +83,20 @@ Peningkatan keamanan:
 MASALAH UMUM
 ------------
 * "could not find driver"
-    -> Ekstensi pdo_sqlite belum aktif (lihat langkah 2).
+    -> Aktifkan ekstensi pdo_mysql di php.ini lalu restart Apache.
+
+* Database tidak ditemukan / koneksi gagal
+    -> Pastikan MySQL/MariaDB aktif, database.sql sudah diimpor, dan
+       kredensial koneksi sesuai.
 
 * Gambar gagal diunggah
     -> Ukuran file terlalu besar. Naikkan upload_max_filesize dan
        post_max_size di php.ini, lalu restart server.
 
 * Ingin mengulang dari awal (reset data)
-    -> Hentikan server, hapus file database.sqlite dan isi folder
-       uploads, lalu jalankan lagi.
+    -> Hapus tabel users dan projects di database etalase_digital, lalu
+       muat ulang database.sql. Hapus isi folder uploads jika gambar juga
+       ingin dihapus.
 
 * Port 8000 sudah dipakai
     -> Gunakan port lain:  php -S localhost:8080

@@ -4,31 +4,22 @@ session_start();
 /* ============================================================
    DATABASE
    ============================================================ */
-$db = new PDO('sqlite:' . __DIR__ . '/database.sqlite');
-$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-$db->exec('PRAGMA foreign_keys = ON');
+$dbHost = getenv('ETALASE_DB_HOST') ?: '127.0.0.1';
+$dbPort = getenv('ETALASE_DB_PORT') ?: '3306';
+$dbName = getenv('ETALASE_DB_NAME') ?: 'etalase_digital';
+$dbUser = getenv('ETALASE_DB_USER') ?: 'root';
+$dbPassword = getenv('ETALASE_DB_PASSWORD');
+$dbPassword = $dbPassword === false ? '' : $dbPassword;
 
-$db->exec("
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        name TEXT NOT NULL,
-        role TEXT NOT NULL CHECK(role IN ('sa', 'admin', 'siswa'))
-    );
-
-    CREATE TABLE IF NOT EXISTS projects (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        description TEXT NOT NULL,
-        image TEXT,
-        link TEXT,
-        demo TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(user_id) REFERENCES users(id)
-    );
-");
+$db = new PDO(
+    "mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset=utf8mb4",
+    $dbUser,
+    $dbPassword,
+    [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ]
+);
 
 /* Seed akun demo (hanya jika tabel users masih kosong) */
 if ((int) $db->query('SELECT COUNT(*) FROM users')->fetchColumn() === 0) {
